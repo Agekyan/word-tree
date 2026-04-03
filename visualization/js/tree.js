@@ -57,16 +57,11 @@ class WordTree {
         this.root.x0 = this.height / 2;
         this.root.y0 = 0;
 
-        // Collapse all children initially except first level
-        if (this.root.children) {
-            this.root.children.forEach(child => this.collapse(child));
-        }
+        // Save full sorted children list for pagination
+        this.allRootChildren = this.root.children ? [...this.root.children] : [];
 
         // Reset zoom to default view
         this.resetZoom();
-
-        // Render
-        this.update(this.root);
     }
 
     /**
@@ -90,6 +85,22 @@ class WordTree {
             d.children = d._children;
             d._children = null;
         }
+    }
+
+    /**
+     * Display a page of root children
+     * @param {number} page - 1-based page number
+     * @param {number} pageSize - Number of children per page
+     */
+    setPage(page, pageSize) {
+        const start = (page - 1) * pageSize;
+        this.root.children = this.allRootChildren.slice(start, start + pageSize);
+        this.root.children.forEach(child => this.collapse(child));
+        this.update(this.root);
+    }
+
+    get totalRootChildren() {
+        return this.allRootChildren ? this.allRootChildren.length : 0;
     }
 
     /**

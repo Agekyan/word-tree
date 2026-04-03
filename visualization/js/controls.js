@@ -7,6 +7,8 @@ class Controls {
         this.dataLoader = dataLoader;
         this.currentRootWord = 'we';
         this.currentDirection = 'after';
+        this.currentPage = 1;
+        this.pageSize = 10;
 
         this.initEventListeners();
     }
@@ -67,6 +69,40 @@ class Controls {
         d3.select('#fit-zoom-btn').on('click', () => {
             this.tree.zoomToFit();
         });
+
+        // Pagination
+        d3.select('#page-size-select').on('change', () => {
+            this.pageSize = +d3.select('#page-size-select').property('value');
+            this.currentPage = 1;
+            this.applyPage();
+        });
+
+        d3.select('#page-prev').on('click', () => {
+            if (this.currentPage > 1) {
+                this.currentPage--;
+                this.applyPage();
+            }
+        });
+
+        d3.select('#page-next').on('click', () => {
+            const totalPages = Math.ceil(this.tree.totalRootChildren / this.pageSize);
+            if (this.currentPage < totalPages) {
+                this.currentPage++;
+                this.applyPage();
+            }
+        });
+    }
+
+    applyPage() {
+        this.tree.setPage(this.currentPage, this.pageSize);
+        this.updatePageControls();
+    }
+
+    updatePageControls() {
+        const totalPages = Math.ceil(this.tree.totalRootChildren / this.pageSize);
+        d3.select('#page-indicator').text(`Page ${this.currentPage} of ${totalPages}`);
+        d3.select('#page-prev').property('disabled', this.currentPage <= 1);
+        d3.select('#page-next').property('disabled', this.currentPage >= totalPages);
     }
 
     /**
@@ -99,6 +135,8 @@ class Controls {
                 this.currentDirection
             );
             this.tree.loadData(data);
+            this.currentPage = 1;
+            this.applyPage();
 
             // Clear search highlights when loading new data
             d3.select('#search-input').property('value', '');
