@@ -6,6 +6,11 @@ Python-based tokenization and data processing system for analyzing 1,056 preside
 
 This project analyzes presidential speeches to build hierarchical word trees showing word sequences that follow (or precede) specific root words. The output is formatted for D3.js visualization with metadata for color coding by historical era or speaker.
 
+The project is broken into two parts:
+
+- **Preprocessing**: Done in Python; cleans the raw speech data (see [here](preprocessing/) for more information)
+- **Visualization**: Done in JavaScript with D3.js; creates word tree visualization from the processed data (see [here](visualization/) for more information)
+
 ## Features
 
 - **Bidirectional Analysis**: Track words both before and after root words
