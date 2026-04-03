@@ -17,7 +17,8 @@ This will:
 1. Load all 1,056 speeches from `speeches/` directory
 2. Process each root word (we, must, freedom, fear, never)
 3. Build word trees for both "after" and "before" directions
-4. Export results to `output/word_tree_data.json`
+4. Drop stop words (e.g. "the", "and", "in")
+5. Export results to `output/word_tree_data.json`
 
 ### Output Format
 
