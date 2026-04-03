@@ -3,22 +3,29 @@ JSON export functionality for D3.js visualization.
 """
 
 import json
+import os
 from typing import Dict, List
 from datetime import datetime
 
 
-def export_to_json(root_word_trees: Dict, speeches: List[Dict],
-                   output_path: str) -> None:
+def export_split_json(root_word_trees: Dict, speeches: List[Dict],
+                      output_dir: str) -> None:
     """
-    Export word tree data to JSON file in D3.js-compatible format.
+    Export word tree data as split JSON files for on-demand loading.
+
+    Writes:
+      {output_dir}/metadata.json        - global metadata
+      {output_dir}/{root_word}.json     - per-root-word tree data
 
     Args:
         root_word_trees: Dictionary mapping root words to their tree structures
                         Format: {root_word: {'after': tree, 'before': tree}}
         speeches: List of all speeches (for metadata generation)
-        output_path: Path to output JSON file
+        output_dir: Directory to write all output files into
     """
     from .metadata import get_all_eras, parse_date
+
+    os.makedirs(output_dir, exist_ok=True)
 
     # Collect global metadata
     presidents = sorted(set(speech['president'] for speech in speeches))
@@ -33,23 +40,29 @@ def export_to_json(root_word_trees: Dict, speeches: List[Dict],
     else:
         date_range = []
 
-    # Build final output structure
-    output = {
-        'root_words': root_word_trees,
-        'metadata': {
-            'total_speeches': len(speeches),
-            'date_range': date_range,
-            'eras': eras,
-            'presidents': presidents,
-            'root_words_analyzed': list(root_word_trees.keys()),
-        }
-    }
+    # Write metadata.json
+    metadata_path = os.path.join(output_dir, 'metadata.json')
+    with open(metadata_path, 'w', encoding='utf-8') as f:
+        json.dump({
+            'metadata': {
+                'total_speeches': len(speeches),
+                'date_range': date_range,
+                'eras': eras,
+                'presidents': presidents,
+                'root_words_analyzed': list(root_word_trees.keys()),
+            }
+        }, f, indent=2, ensure_ascii=False)
+    size_kb = os.path.getsize(metadata_path) / 1024
+    print(f"  Created {metadata_path} ({size_kb:.2f} KB)")
 
-    # Write to file with pretty formatting
-    with open(output_path, 'w', encoding='utf-8') as f:
-        json.dump(output, f, indent=2, ensure_ascii=False)
+    # Write one file per root word
+    for root_word, tree_data in root_word_trees.items():
+        word_path = os.path.join(output_dir, f'{root_word}.json')
+        with open(word_path, 'w', encoding='utf-8') as f:
+            json.dump(tree_data, f, indent=2, ensure_ascii=False)
+        size_mb = os.path.getsize(word_path) / (1024 * 1024)
+        print(f"  Created {word_path} ({size_mb:.2f} MB)")
 
-    print(f"Successfully exported word tree data to {output_path}")
     print(f"Total speeches processed: {len(speeches)}")
     print(f"Root words analyzed: {', '.join(root_word_trees.keys())}")
     print(f"Date range: {date_range[0] if date_range else 'N/A'} to {date_range[1] if date_range else 'N/A'}")

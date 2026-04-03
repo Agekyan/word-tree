@@ -6,7 +6,7 @@ import os
 import sys
 from src.tokenizer import load_speeches, STOP_WORDS
 from src.tree_builder import process_speeches_for_root
-from src.exporter import export_to_json, print_tree_preview, generate_tree_statistics
+from src.exporter import export_split_json, print_tree_preview, generate_tree_statistics
 
 
 def main():
@@ -19,8 +19,8 @@ def main():
     print()
 
     # Configuration
-    speeches_dir = 'speeches/'
-    output_path = 'output/word_tree_data.json'
+    speeches_dir = '../speeches/'
+    output_dir = '../visualization/data'
     root_words = ['we', 'must', 'freedom', 'fear', 'never']
     window_size = 5  # 4-5 words as specified
 
@@ -73,10 +73,9 @@ def main():
               f"max depth {before_stats['max_depth']}")
         print()
 
-    # Step 3: Export to JSON
-    print("Step 3: Exporting to JSON...")
-    os.makedirs(os.path.dirname(output_path), exist_ok=True)
-    export_to_json(results, speeches, output_path)
+    # Step 3: Export split JSON files
+    print("Step 3: Exporting split JSON files...")
+    export_split_json(results, speeches, output_dir)
     print()
 
     # Step 4: Print preview of first root word
@@ -88,7 +87,7 @@ def main():
 
     print("="*60)
     print("Processing complete!")
-    print(f"Output saved to: {output_path}")
+    print(f"Output written to: {output_dir}/")
     print("="*60)
 
 
