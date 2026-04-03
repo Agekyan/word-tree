@@ -166,7 +166,8 @@ def convert_tree_to_list(tree_node: Dict) -> Dict:
 
 
 def process_speeches_for_root(speeches: List[Dict], root: str,
-                              direction: str, window_size: int = 5) -> Dict:
+                              direction: str, window_size: int = 5,
+                              stop_words=None) -> Dict:
     """
     Process all speeches to build tree for a specific root word and direction.
 
@@ -199,6 +200,10 @@ def process_speeches_for_root(speeches: List[Dict], root: str,
         # Extract context for each occurrence
         for pos in root_positions:
             context_words = extract_context_window(tokens, pos, direction, window_size)
+
+            if stop_words:
+                from .tokenizer import filter_stop_words
+                context_words = filter_stop_words(context_words, stop_words)
 
             if not context_words:
                 continue

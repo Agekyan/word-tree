@@ -4,7 +4,7 @@ Main entry point for presidential speech word tree analysis.
 
 import os
 import sys
-from src.tokenizer import load_speeches
+from src.tokenizer import load_speeches, STOP_WORDS
 from src.tree_builder import process_speeches_for_root
 from src.exporter import export_to_json, print_tree_preview, generate_tree_statistics
 
@@ -48,12 +48,14 @@ def main():
         # Build "after" tree
         print(f"      Building 'after' tree...")
         after_tree = process_speeches_for_root(speeches, root, direction='after',
-                                              window_size=window_size)
+                                              window_size=window_size,
+                                              stop_words=STOP_WORDS)
 
         # Build "before" tree
         print(f"      Building 'before' tree...")
         before_tree = process_speeches_for_root(speeches, root, direction='before',
-                                               window_size=window_size)
+                                               window_size=window_size,
+                                               stop_words=STOP_WORDS)
 
         # Store results
         results[root] = {
