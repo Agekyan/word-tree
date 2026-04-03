@@ -1,3 +1,5 @@
+const SUBSET_SIZE = 5;
+
 /**
  * WordTree class for D3.js tree visualization with collapsible nodes
  */
@@ -70,7 +72,9 @@ class WordTree {
      */
     collapse(d) {
         if (d.children) {
-            d._children = d.children;
+            const realChildren = d.children.filter(c => !c.data._isSentinel);
+            if (!d._allChildren) d._allChildren = realChildren;
+            d._children = d._allChildren;
             d._children.forEach(child => this.collapse(child));
             d.children = null;
         }
@@ -103,18 +107,63 @@ class WordTree {
         return this.allRootChildren ? this.allRootChildren.length : 0;
     }
 
+    createSentinel(parent, showMore) {
+        const all = parent._allChildren;
+        const count = parent._visibleCount;
+        const name = showMore
+            ? `\u25bc ${Math.min(SUBSET_SIZE, all.length - count)} more`
+            : `\u25b2 ${Math.min(SUBSET_SIZE, count - SUBSET_SIZE)} less`;
+        return {
+            data: { name, _isSentinel: true, _showMore: showMore },
+            depth: parent.depth + 1,
+            height: 0,
+            parent: parent,
+            children: null,
+            _children: null,
+            id: `sentinel-${showMore ? 'more' : 'less'}-${parent.id}`,
+            x: 0, x0: 0, y: 0, y0: 0
+        };
+    }
+
+    renderChildren(d) {
+        const slice = d._allChildren.slice(0, d._visibleCount);
+        const sentinels = [];
+        if (d._visibleCount < d._allChildren.length) sentinels.push(this.createSentinel(d, true));
+        if (d._visibleCount > SUBSET_SIZE) sentinels.push(this.createSentinel(d, false));
+        d.children = [...slice, ...sentinels];
+    }
+
+    expandToSubset(d) {
+        d._visibleCount = Math.min(SUBSET_SIZE, d._allChildren.length);
+        this.renderChildren(d);
+        d._children = null;
+    }
+
     /**
      * Toggle children on click
      * @param {Event} event - Click event
      * @param {Object} d - Node data
      */
     click(event, d) {
+        if (d.data._isSentinel) {
+            const parent = d.parent;
+            const total = parent._allChildren.length;
+            if (d.data._showMore) {
+                parent._visibleCount = Math.min(parent._visibleCount + SUBSET_SIZE, total);
+            } else {
+                parent._visibleCount = Math.max(parent._visibleCount - SUBSET_SIZE, SUBSET_SIZE);
+            }
+            this.renderChildren(parent);
+            this.update(parent);
+            return;
+        }
+
         if (d.children) {
-            d._children = d.children;
+            d._children = d._allChildren;
             d.children = null;
         } else {
-            d.children = d._children;
-            d._children = null;
+            if (!d._allChildren) d._allChildren = d._children;
+            this.expandToSubset(d);
         }
         this.update(d);
     }
@@ -140,19 +189,24 @@ class WordTree {
 
         // Enter new nodes at parent's previous position
         const nodeEnter = node.enter().append('g')
-            .attr('class', 'node')
+            .attr('class', d => d.data._isSentinel ? 'node sentinel' : 'node')
             .attr('transform', d => `translate(${source.y0},${source.x0})`)
             .on('click', (event, d) => this.click(event, d));
 
         nodeEnter.append('circle')
             .attr('r', 1e-6)
-            .style('fill', d => d._children ? 'lightsteelblue' : '#fff');
+            .style('fill', d => {
+                if (d.data._isSentinel) return '#ccc';
+                return d._children ? 'lightsteelblue' : '#fff';
+            });
 
         nodeEnter.append('text')
             .attr('dy', '.35em')
             .attr('x', d => d.children || d._children ? -13 : 13)
             .attr('text-anchor', d => d.children || d._children ? 'end' : 'start')
-            .text(d => `${d.data.name} (${formatNumber(d.data.value || 0)})`)
+            .text(d => d.data._isSentinel
+                ? d.data.name
+                : `${d.data.name} (${formatNumber(d.data.value || 0)})`)
             .style('fill-opacity', 1e-6);
 
         // Transition nodes to their new position
@@ -165,6 +219,7 @@ class WordTree {
         nodeUpdate.select('circle')
             .attr('r', this.nodeRadius)
             .style('fill', d => {
+                if (d.data._isSentinel) return '#ccc';
                 if (d._children) return 'lightsteelblue';
                 return getNodeColor(d, this.colorMode);
             })

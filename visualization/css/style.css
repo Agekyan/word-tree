@@ -216,6 +216,17 @@ button {
     stroke-width: 1.5px;
 }
 
+/* ===== Sentinel Nodes (Show More / Show Less) ===== */
+.node.sentinel circle {
+    stroke-dasharray: 4, 3;
+    stroke: #999;
+}
+
+.node.sentinel text {
+    fill: #888;
+    font-style: italic;
+}
+
 /* ===== Highlighted Nodes (Search Results) ===== */
 .node.highlighted circle {
     stroke: #ff6b6b;
