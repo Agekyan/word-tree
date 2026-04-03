@@ -25,7 +25,7 @@ class WordTree {
 
         // Create tree group inside zoom container
         this.g = this.zoomContainer.append('g')
-            .attr('transform', `translate(${this.margin.left},${this.margin.top})`);
+            .attr('transform', `translate(${this.margin.left},${this.height / 2})`);
 
         // Initialize zoom behavior
         this.zoom = d3.zoom()
@@ -37,10 +37,7 @@ class WordTree {
 
         // Create tree layout
         this.treemap = d3.tree()
-            .size([
-                this.height - this.margin.top - this.margin.bottom,
-                this.width - this.margin.left - this.margin.right
-            ]);
+            .nodeSize([30, 180]); // [vertical px per node, horizontal px per level]
 
         this.root = null;
         this.i = 0; // Node ID counter
@@ -57,7 +54,7 @@ class WordTree {
 
         // Create hierarchy
         this.root = d3.hierarchy(treeData, d => d.children);
-        this.root.x0 = (this.height - this.margin.top - this.margin.bottom) / 2;
+        this.root.x0 = this.height / 2;
         this.root.y0 = 0;
 
         // Collapse all children initially except first level
