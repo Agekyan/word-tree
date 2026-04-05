@@ -8,6 +8,7 @@ Interactive D3.js visualization for exploring word sequences in presidential spe
 - **Root Word Selection**: Explore 5 different root words (we, must, freedom, fear, never)
 - **Bidirectional Analysis**: Toggle between suffix (after) and prefix (before) analysis
 - **Color Coding**: View by historical era or speaker (president)
+- **Filtering**: Filter tree branches by era or speaker
 - **Search & Highlight**: Find and highlight specific words in the tree
 - **Tooltips**: Hover over nodes for detailed statistics
 - **Smooth Animations**: 750ms transitions between states
@@ -69,8 +70,9 @@ word-tree/
 1. **Root Word Selector**: Choose which root word to analyze
 2. **Direction Toggle**: Switch between "After (Suffix)" and "Before (Prefix)"
 3. **Color By**: Toggle between "Historical Era" and "Speaker (President)"
-4. **Search**: Enter a word to highlight matching nodes
-5. **Expand/Collapse All**: Quick controls for tree exploration
+4. **Filter By**: Restrict visible branches to a selected era or speaker
+5. **Search**: Enter a word to highlight matching nodes
+6. **Expand/Collapse All**: Quick controls for tree exploration
 
 ### Interactions
 
